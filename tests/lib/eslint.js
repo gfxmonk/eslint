@@ -2440,6 +2440,34 @@ describe("eslint", function() {
             assert.equal(messages.length, 0);
         });
 
+        it("should strip leading line: prefix from thrown error", function() {
+            var parser = {
+
+                parse: function() {
+                    throw new Error("line 123: Failed to parse");
+                }
+
+            };
+            var messages = eslint.verify("var x=1;", { parser: parser }, "filename");
+            assert.equal(messages.length, 1);
+            assert.equal(messages[0].severity, 2);
+            assert.equal(messages[0].message, "Failed to parse");
+        });
+
+        it("should not modify an error message without a leading line: prefix", function() {
+            var parser = {
+
+                parse: function() {
+                    throw new Error("Failed to parse because: reasons...");
+                }
+
+            };
+            var messages = eslint.verify("var x=1;", { parser: parser }, "filename");
+            assert.equal(messages.length, 1);
+            assert.equal(messages[0].severity, 2);
+            assert.equal(messages[0].message, "Failed to parse because: reasons...");
+        });
+
         // only test in Node.js, not browser
         if (typeof window === "undefined") {
 
